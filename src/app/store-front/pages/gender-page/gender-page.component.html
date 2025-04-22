@@ -1,1 +1,25 @@
-<p>gender-page works!</p>,
+<h1 class="text-3xl font-bold font-montserrat">
+  <span class="text-accent">
+    @switch (gender()) { @case (genderType.Women) { Products for women } @case
+    (genderType.Men) { Products for men } @case (genderType.Kid) { Products for
+    kids } @default { Every product } }
+  </span>
+</h1>
+
+<h2 class="text-xl mb-5">For all tastes</h2>
+
+<!-- <h2>Route params: {{ _route.params | async | json }}</h2> -->
+
+@if (productsResource.hasValue()) {
+<div
+  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-2 gap-3"
+>
+  @for (product of productsResource.value().products ; track product.id) {
+
+  <product-card [product]="product" />
+  }
+</div>
+
+} @else {
+<p>There is no products</p>
+}
