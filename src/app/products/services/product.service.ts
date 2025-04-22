@@ -1,7 +1,20 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import type { ProductsResponse } from '@products/interfaces/product.interface';
+import {
+  Gender,
+  Product,
+  ProductsResponse,
+} from '@products/interfaces/product.interface';
 import { Observable, tap } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
+const BASE_URL = environment.baseUrl;
+
+interface ProductOptions {
+  limit?: number;
+  offset?: number;
+  gender?: Gender;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -9,9 +22,20 @@ import { Observable, tap } from 'rxjs';
 export class ProductService {
   private _http = inject(HttpClient);
 
-  getProducts(): Observable<ProductsResponse> {
-    return this._http
-      .get<ProductsResponse>('http://localhost:3000/api/products')
-      .pipe(tap((resp) => console.log('Response: ', resp)));
+  getProducts(options: ProductOptions): Observable<ProductsResponse> {
+    const { limit: pageSize = 9, offset = 0, gender = '' } = options;
+    const params = {
+      params: new HttpParams()
+        .set('limit', pageSize) // Tamaño de la página
+        .set('offset', offset) // Número de items que se salta
+        .set('gender', gender),
+    };
+    return this._http.get<ProductsResponse>(
+      BASE_URL.concat('/products'),
+      params
+    );
+    // .pipe(tap((resp) => console.log('Response: ', resp)));
   }
 }
+
+// .get<ProductsResponse>(BASE_URL.concat('/products'), { params: { limit, offset, gender }})

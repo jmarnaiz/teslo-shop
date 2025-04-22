@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { ProductCardComponent } from '@products/components/product-card/product-card.component';
 import { ProductService } from '@products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { Gender } from '@products/interfaces/product.interface';
 
 @Component({
   selector: 'app-home-page',
@@ -14,7 +15,10 @@ export class HomePageComponent {
   productsResource = rxResource({
     request: () => ({}),
     loader: ({ request }) => {
-      return this.productService.getProducts();
+      return this.productService.getProducts({
+        // limit: 5,
+        // gender: Gender.Women,
+      });
     },
   });
 }
