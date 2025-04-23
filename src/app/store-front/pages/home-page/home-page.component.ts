@@ -2,22 +2,26 @@ import { Component, inject } from '@angular/core';
 import { ProductCardComponent } from '@products/components/product-card/product-card.component';
 import { ProductService } from '@products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Gender } from '@products/interfaces/product.interface';
+import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { PaginationService } from '@shared/components/pagination/pagination.service';
+import { environment } from 'src/environments/environment';
+
+const PAGE_SIZE = environment.pageSize;
 
 @Component({
   selector: 'app-home-page',
-  imports: [ProductCardComponent],
+  imports: [ProductCardComponent, PaginationComponent],
   templateUrl: './home-page.component.html',
 })
 export class HomePageComponent {
-  productService = inject(ProductService);
+  private readonly _productService = inject(ProductService);
+  readonly paginationService = inject(PaginationService);
 
   productsResource = rxResource({
-    request: () => ({}),
+    request: () => ({ page: this.paginationService.currentPage() - 1 }),
     loader: ({ request }) => {
-      return this.productService.getProducts({
-        // limit: 5,
-        // gender: Gender.Women,
+      return this._productService.getProducts({
+        offset: request.page * PAGE_SIZE,
       });
     },
   });

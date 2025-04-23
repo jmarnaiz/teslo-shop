@@ -17,9 +17,16 @@
   @for (product of productsResource.value().products ; track product.id) {
 
   <product-card [product]="product" />
+  } @empty {
+  <p>No products available</p>
   }
 </div>
 
 } @else {
 <p>There is no products</p>
 }
+
+<app-pagination
+  [totalPages]="productsResource.value()?.pages ?? 0"
+  [currentPage]="paginationService.currentPage()"
+/>

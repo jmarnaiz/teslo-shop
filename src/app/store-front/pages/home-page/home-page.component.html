@@ -1,16 +1,19 @@
 <h1 class="text-3xl font-bold font-montserrat">Every product</h1>
 <h2 class="text-xl mb-5">For all tastes</h2>
 
-@if (productsResource.hasValue()) {
 <div
   class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-2 gap-3"
 >
-  @for (product of productsResource.value().products ; track product.id) {
+  @for (product of productsResource.value()?.products ?? [] ; track product.id)
+  {
 
   <product-card [product]="product" />
+  } @empty {
+  <p>There is no products</p>
   }
 </div>
 
-} @else {
-<p>There is no products</p>
-}
+<app-pagination
+  [totalPages]="productsResource.value()?.pages ?? 0"
+  [currentPage]="paginationService.currentPage()"
+/>
