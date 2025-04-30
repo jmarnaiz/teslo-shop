@@ -14,7 +14,6 @@ export class LoginComponent {
   private readonly _router = inject(Router);
 
   hasError = signal<boolean>(false);
-  isPosting = signal<boolean>(false);
 
   loginForm = this._fb.group({
     email: ['', [Validators.required, Validators.email]],

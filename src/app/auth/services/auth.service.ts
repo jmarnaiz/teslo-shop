@@ -1,7 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import type { AuthResponse } from '@auth/interfaces/auth-response.interface';
+import type {
+  AuthResponse,
+  CreateUserDTO,
+} from '@auth/interfaces/auth-response.interface';
 import { User } from '@auth/interfaces/user.interface';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -49,6 +52,15 @@ export class AuthService {
         // return of(false);
       );
   }
+
+  register(userDTO: CreateUserDTO): Observable<boolean> {
+    return this._http
+      .post<AuthResponse>(BASE_URL.concat('/auth/register'), userDTO)
+      .pipe(
+        map((resp) => this._handleAuthSuccess(resp)),
+        catchError(({ error }) => this._handleAuthError(error))
+      );
+  }
   checkAuthStatus(): Observable<boolean> {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -73,7 +85,7 @@ export class AuthService {
     this._token.set(null);
     this._authStatus.set('not-authenticated');
 
-    // localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   }
 
   private _handleAuthSuccess({ token, user }: AuthResponse): boolean {
