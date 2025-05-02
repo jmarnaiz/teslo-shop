@@ -3,9 +3,7 @@ import { Router, type CanMatchFn } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
-export const notAuthenticatedGuard: CanMatchFn = async (route, segments) => {
-  console.log('notAuthenticatedGuard');
-
+export const notAuthenticatedGuard: CanMatchFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -16,8 +14,6 @@ export const notAuthenticatedGuard: CanMatchFn = async (route, segments) => {
    * 'checking' porque es el valor al que se inicializa. Por eso debemos esperar
    * a obtener un valor válido, y eso se consigue con el 'firstValuefrom'
    */
-  console.log('Guard');
-  console.log('isAuthenticated?: ', isAuthenticated);
 
   // Debe estar NO autenticado para dejarlo pasar
   if (isAuthenticated) {
