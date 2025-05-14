@@ -58,4 +58,38 @@ export class ProductService {
       .get<Product>(`${BASE_URL}/products/${slug}`)
       .pipe(tap((resp) => this._productCache.set(slug, resp)));
   }
+
+  getProductById(id: string): Observable<Product> {
+    if (!id) {
+      return of();
+    }
+    if (this._productCache.has(id)) {
+      return of(this._productCache.get(id)!);
+    }
+    return this._http
+      .get<Product>(`${BASE_URL}/products/${id}`)
+      .pipe(tap((resp) => this._productCache.set(id, resp)));
+  }
+
+  updateProduct(id: string, product: Partial<Product>): Observable<Product> {
+    return this._http
+      .patch<Product>(`${BASE_URL}/products/${id}`, product)
+      .pipe(tap((product) => this._updateProductCache(product)));
+  }
+
+  private _updateProductCache(product: Product) {
+    const productId = product.id;
+
+    // Actualizar el producto en el caché individual
+    this._productCache.set(productId, product);
+
+    // Actualizar el producto en el caché de productos
+    this._productsCache.forEach((productResponse) => {
+      productResponse.products = productResponse.products.map(
+        (currentProduct) => {
+          return currentProduct.id === productId ? product : currentProduct;
+        }
+      );
+    });
+  }
 }
