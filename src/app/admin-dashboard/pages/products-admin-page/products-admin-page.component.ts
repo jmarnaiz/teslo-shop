@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { ProductTableComponent } from '@products/components/product-table/product-table.component';
 import { ProductService } from '@products/services/product.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
@@ -10,7 +11,7 @@ const PAGE_SIZE = environment.pageSize;
 
 @Component({
   selector: 'app-products-admin-page',
-  imports: [ProductTableComponent, PaginationComponent],
+  imports: [ProductTableComponent, PaginationComponent, RouterLink],
   templateUrl: './products-admin-page.component.html',
 })
 export class ProductsAdminPageComponent {
