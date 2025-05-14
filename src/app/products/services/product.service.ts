@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import type {
+import { User } from '@auth/interfaces/user.interface';
+import {
   Gender,
   Product,
   ProductsResponse,
@@ -16,6 +17,20 @@ interface ProductOptions {
   offset?: number;
   gender?: Gender;
 }
+
+const _emptyProduct: Product = {
+  id: 'new',
+  title: '',
+  price: 0,
+  description: '',
+  slug: '',
+  stock: 0,
+  sizes: [],
+  gender: Gender.Men,
+  tags: [],
+  images: [],
+  user: {} as User,
+};
 
 @Injectable({
   providedIn: 'root',
@@ -60,6 +75,10 @@ export class ProductService {
   }
 
   getProductById(id: string): Observable<Product> {
+    if (id === 'new') {
+      return of(_emptyProduct);
+    }
+
     if (!id) {
       return of();
     }
@@ -69,6 +88,14 @@ export class ProductService {
     return this._http
       .get<Product>(`${BASE_URL}/products/${id}`)
       .pipe(tap((resp) => this._productCache.set(id, resp)));
+  }
+
+  createProduct(product: Partial<Product>): Observable<Product> {
+    return this._http
+      .post<Product>(`${BASE_URL}/products`, product)
+      .pipe(tap((product) => this._updateProductCache(product)));
+    // Se puede optimizar para manadar un segundo parámetro y que
+    // no actualice _productsCache
   }
 
   updateProduct(id: string, product: Partial<Product>): Observable<Product> {

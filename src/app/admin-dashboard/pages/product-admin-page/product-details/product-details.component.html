@@ -115,12 +115,6 @@
       <option value="unisex">Unisex</option>
     </select> -->
 
-    <!-- @if (productForm.hasError('enumInvalid') && productForm.touched) {
-    <span class="form-text text-danger">
-      Las contraseñas no son iguales
-    </span>
-    } -->
-
     <!-- Sizes -->
     <div class="grid grid-cols-6 gap-2">
       @for (size of sizes; track size) {
@@ -150,3 +144,9 @@
     <input type="file" class="file-input file-input-bordered w-full mt-4" />
   </div>
 </form>
+
+@if(saved()) {
+<div class="alert alert-success fixed bottom-4 right-4 w-80 animate-fadeIn">
+  <span>Update successful</span>
+</div>
+}

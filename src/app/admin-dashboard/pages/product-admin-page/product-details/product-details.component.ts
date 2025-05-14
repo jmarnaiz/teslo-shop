@@ -1,10 +1,12 @@
-import { Component, inject, input, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { Gender, Product, Size } from '@products/interfaces/product.interface';
 import { ProductCarouselComponent } from '@products/components/product-carousel/product-carousel.component';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@utils/form-utils';
 import { FormErrorLabelComponent } from '../../../../shared/components/form-error-label/form-error-label.component';
 import { ProductService } from '@products/services/product.service';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'product-details',
@@ -17,11 +19,16 @@ import { ProductService } from '@products/services/product.service';
 })
 export class ProductDetailsComponent implements OnInit {
   product = input.required<Product>();
+
   private readonly _productService = inject(ProductService);
+  private readonly _router = inject(Router);
+
   readonly sizes = Object.values(Size);
   readonly SizesEnum = Size;
   readonly genders = Object.values(Gender);
   readonly GendersEnum = Gender;
+
+  saved = signal(false);
 
   private readonly _fb = inject(FormBuilder);
   readonly productForm = this._fb.group({
@@ -62,7 +69,7 @@ export class ProductDetailsComponent implements OnInit {
     this.productForm.patchValue({ sizes: selectedSizes });
   }
 
-  onSubmit() {
+  async onSubmit() {
     const isValid = this.productForm.valid;
     this.productForm.markAllAsTouched();
 
@@ -78,10 +85,38 @@ export class ProductDetailsComponent implements OnInit {
           ?.split(',')
           .map((tag) => tag.toLocaleLowerCase().trim()) ?? [],
     };
-    this._productService
-      .updateProduct(this.product().id, processedValue)
-      .subscribe((product) => {
-        console.log('Update product');
-      });
+
+    if (this.product().id === 'new') {
+      // Create product
+
+      const product = await firstValueFrom(
+        this._productService.createProduct(processedValue)
+      );
+
+      console.log('Created product');
+      this._router.navigate(['/admin/products', product.id]);
+      // this._productService
+      //   .createProduct(processedValue)
+      //   .subscribe((product) => {
+      //     console.log('Created product');
+      //     this._router.navigate(['/admin/products', product.id]);
+      //     this.saved.set(true);
+      //   });
+    } else {
+      // Update product
+      await firstValueFrom(
+        this._productService.updateProduct(this.product().id, processedValue)
+      );
+
+      this.saved.set(true);
+      setTimeout(() => {
+        this.saved.set(false);
+      }, 3000);
+      // this._productService
+      //   .updateProduct(this.product().id, processedValue)
+      //   .subscribe(() => {
+      //     console.log('Updated product');
+      //   });
+    }
   }
 }
