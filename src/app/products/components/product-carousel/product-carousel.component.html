@@ -6,7 +6,19 @@
     @for (slide of images(); track slide) {
 
     <div class="swiper-slide">
-      <img [src]="slide | productImage" class="w-full object-cover" />
+      <img
+        [src]="slide | productImage"
+        alt="Product image"
+        class="w-full object-cover"
+      />
+    </div>
+    } @empty {
+    <div class="swiper-slide">
+      <img
+        [src]="null | productImage"
+        alt="Product image placeholder"
+        class="w-full object-cover"
+      />
     </div>
     }
   </div>
