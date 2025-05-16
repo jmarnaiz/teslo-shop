@@ -1,4 +1,11 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { Gender, Product, Size } from '@products/interfaces/product.interface';
 import { ProductCarouselComponent } from '@products/components/product-carousel/product-carousel.component';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -29,6 +36,14 @@ export class ProductDetailsComponent implements OnInit {
   readonly GendersEnum = Gender;
 
   saved = signal(false);
+  // productImages = linkedSignal(() => this.product().images);
+
+  imageFileList: FileList | null = null;
+  imagesTemp = signal<string[]>([]);
+
+  carrouselImages = computed(() => {
+    return [...this.product().images, ...this.imagesTemp()];
+  });
 
   private readonly _fb = inject(FormBuilder);
   readonly productForm = this._fb.group({
@@ -118,5 +133,23 @@ export class ProductDetailsComponent implements OnInit {
       //     console.log('Updated product');
       //   });
     }
+  }
+
+  // Images
+
+  onFilesChanged(event: Event) {
+    const fileList = (event.target as HTMLInputElement).files;
+    this.imageFileList = fileList;
+
+    // El segundo parámetro es una función (map) que se aplica a todos los elementos del array
+    const imageUrls = Array.from(fileList ?? [], (file) =>
+      URL.createObjectURL(file)
+    );
+
+    this.imagesTemp.set(imageUrls);
+    // this.productImages.update((productImages) => [
+    //   ...imageUrls,
+    //   ...productImages,
+    // ]);
   }
 }

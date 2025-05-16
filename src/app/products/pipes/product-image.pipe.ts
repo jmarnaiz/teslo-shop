@@ -16,8 +16,15 @@ export class ProductImagePipe implements PipeTransform {
     }
 
     if (typeof value === 'string') {
+      if (value.startsWith('blob:')) {
+        // return value.replace(/^blob:/, '');
+        return value;
+      }
+
       return `${BASE_URL}/files/product/${value}`;
     }
+
+    // Si es un array de elementos, solo voy a mostrar el primero
 
     const image = value.at(0);
 

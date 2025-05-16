@@ -3,6 +3,8 @@ import {
   Component,
   ElementRef,
   input,
+  OnChanges,
+  SimpleChanges,
   viewChild,
 } from '@angular/core';
 // import Swiper JS
@@ -25,19 +27,52 @@ import { ProductImagePipe } from '@products/pipes/product-image.pipe';
   }
   `,
 })
-export class ProductCarouselComponent implements AfterViewInit {
+export class ProductCarouselComponent implements AfterViewInit, OnChanges {
   images = input.required<string[]>();
   swiperDiv = viewChild.required<ElementRef>('swiperDiv');
+  swiper: Swiper | undefined = undefined;
 
   ngAfterViewInit(): void {
+    this._swiperInit();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['images'].firstChange) {
+      return;
+    }
+
+    if (!this.swiper) {
+      return;
+    }
+
+    // Lo ideal sería esto:
+    // this.swiper.addSlide()
+    this.swiper.destroy(true, true);
+
+    // To fix dots problem
+
+    const paginationElm: HTMLDivElement =
+      this.swiperDiv().nativeElement.querySelector('.swiper-pagination');
+
+    console.log(paginationElm);
+
+    paginationElm.innerHTML = '';
+
+    // Esto me duele una barbaridad
+
+    setTimeout(() => {
+      this._swiperInit();
+    }, 100);
+  }
+
+  private _swiperInit() {
     const element = this.swiperDiv().nativeElement;
 
     // Redundant because is required
     if (!element) {
       throw new Error('No element found');
     }
-
-    const swiper = new Swiper(element, {
+    this.swiper = new Swiper(element, {
       // Optional parameters
       direction: 'horizontal',
       loop: true,
