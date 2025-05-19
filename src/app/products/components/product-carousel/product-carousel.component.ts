@@ -54,8 +54,6 @@ export class ProductCarouselComponent implements AfterViewInit, OnChanges {
     const paginationElm: HTMLDivElement =
       this.swiperDiv().nativeElement.querySelector('.swiper-pagination');
 
-    console.log(paginationElm);
-
     paginationElm.innerHTML = '';
 
     // Esto me duele una barbaridad
