@@ -38,7 +38,7 @@ export class ProductDetailsComponent implements OnInit {
   saved = signal(false);
   // productImages = linkedSignal(() => this.product().images);
 
-  imageFileList: FileList | null = null;
+  imageFileList: FileList | undefined = undefined;
   imagesTemp = signal<string[]>([]);
 
   carrouselImages = computed(() => {
@@ -105,7 +105,7 @@ export class ProductDetailsComponent implements OnInit {
       // Create product
 
       const product = await firstValueFrom(
-        this._productService.createProduct(processedValue)
+        this._productService.createProduct(processedValue, this.imageFileList)
       );
 
       console.log('Created product');
@@ -120,7 +120,11 @@ export class ProductDetailsComponent implements OnInit {
     } else {
       // Update product
       await firstValueFrom(
-        this._productService.updateProduct(this.product().id, processedValue)
+        this._productService.updateProduct(
+          this.product().id,
+          processedValue,
+          this.imageFileList
+        )
       );
 
       this.saved.set(true);
@@ -139,7 +143,7 @@ export class ProductDetailsComponent implements OnInit {
 
   onFilesChanged(event: Event) {
     const fileList = (event.target as HTMLInputElement).files;
-    this.imageFileList = fileList;
+    this.imageFileList = fileList ?? undefined;
 
     // El segundo parámetro es una función (map) que se aplica a todos los elementos del array
     const imageUrls = Array.from(fileList ?? [], (file) =>

@@ -6,7 +6,7 @@ import {
   Product,
   ProductsResponse,
 } from '@products/interfaces/product.interface';
-import { Observable, of, tap } from 'rxjs';
+import { forkJoin, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 const BASE_URL = environment.baseUrl;
@@ -90,18 +90,48 @@ export class ProductService {
       .pipe(tap((resp) => this._productCache.set(id, resp)));
   }
 
-  createProduct(product: Partial<Product>): Observable<Product> {
-    return this._http
-      .post<Product>(`${BASE_URL}/products`, product)
-      .pipe(tap((product) => this._updateProductCache(product)));
-    // Se puede optimizar para manadar un segundo parámetro y que
-    // no actualice _productsCache
+  createProduct(
+    product: Partial<Product>,
+    imageFileList?: FileList
+  ): Observable<Product> {
+    return this.uploadImages(imageFileList).pipe(
+      map((imageNames) => ({
+        ...product,
+        images: [...imageNames],
+      })),
+      switchMap((newProduct) =>
+        this._http.post<Product>(`${BASE_URL}/products`, newProduct)
+      ),
+      tap((product) => this._updateProductCache(product))
+    );
   }
+  // Se puede optimizar para mandar un segundo parámetro y que
+  // no actualice _productsCache
 
-  updateProduct(id: string, product: Partial<Product>): Observable<Product> {
-    return this._http
-      .patch<Product>(`${BASE_URL}/products/${id}`, product)
-      .pipe(tap((product) => this._updateProductCache(product)));
+  updateProduct(
+    id: string,
+    product: Partial<Product>,
+    imageFileList?: FileList
+  ): Observable<Product> {
+    const currentImages = product.images ?? [];
+    return this.uploadImages(imageFileList).pipe(
+      map((imageNames) => ({
+        ...product,
+        images: [...currentImages, ...imageNames],
+      })),
+      switchMap((updatedProduct) =>
+        this._http.patch<Product>(`${BASE_URL}/products/${id}`, updatedProduct)
+      ),
+      tap((product) => this._updateProductCache(product))
+    );
+
+    /**
+     * switchMap toma el valor de un observable anterior y lo encandena
+     * con un valor nuevo, emitiendo un único valor.
+     * Básicamente lo que va a hacer es transformar un Observable en
+     * otros Observables y unificar la salida de todos los Observables
+     * bajo un solo stream.
+     */
   }
 
   private _updateProductCache(product: Product) {
@@ -118,5 +148,27 @@ export class ProductService {
         }
       );
     });
+  }
+
+  uploadImages(images?: FileList): Observable<string[]> {
+    if (!images) {
+      return of([]);
+    }
+
+    const uploadObservables: Observable<string>[] = Array.from(
+      images,
+      (imageFile) => this.uploadImage(imageFile)
+    );
+
+    return forkJoin(uploadObservables);
+  }
+
+  uploadImage(imageFile: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    return this._http
+      .post<{ fileName: string }>(`${BASE_URL}/files/product/`, formData)
+      .pipe(map((resp) => resp.fileName));
   }
 }
